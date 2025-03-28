@@ -39,7 +39,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void deleteEmployee(Long empId) {
+    public void deleteEmployee(String empId) {
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         employee.setFloorSeatSeq(null);
@@ -47,7 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeSeatingDto getEmployeeSeating(Long empId) {
+    public EmployeeSeatingDto getEmployeeSeating(String empId) {
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         if (employee.getFloorSeatSeq() != null) {

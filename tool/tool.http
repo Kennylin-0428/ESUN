@@ -11,8 +11,9 @@ POST http://localhost:8080/api/employee/add
 Content-Type: application/json
 
 {
-  "name": "kyrie irving",
-  "email": "kyrieirvung@example.com",
+  "empId": "0004",
+  "name": "cindy",
+  "email": "cindy@example.com",
   "floorSeatSeq": 1
 }
 

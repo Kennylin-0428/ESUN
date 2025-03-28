@@ -101,7 +101,7 @@ public class SeatingChartServiceImpl implements SeatingChartService {
         Optional<Employee> employeeOpt = employeeRepository.findByFloorSeatSeq(seat.getFloorSeatSeq());
 
         boolean occupied = employeeOpt.isPresent();
-        Integer empId = occupied ? employeeOpt.get().getEmpId() : null;
+        String empId = occupied ? employeeOpt.get().getEmpId() : null;
 
         return new SeatingChartDto(seat.getFloorSeatSeq(), seat.getFloorNo(), seat.getSeatNo(), occupied, empId);
     }

@@ -13,5 +13,5 @@ public class SeatingChartDto {
     private String floorNo;
     private String seatNo;
     private Boolean occupied;
-    private Integer empId;
+    private String empId;
 }

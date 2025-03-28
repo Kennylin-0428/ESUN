@@ -9,7 +9,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/employee")
@@ -32,13 +31,13 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/delete/{empId}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable Long empId) {
+    public ResponseEntity<String> deleteEmployee(@PathVariable String empId) {
         employeeService.deleteEmployee(empId);
         return ResponseEntity.ok("Employee deleted and seat cleared.");
     }
 
     @GetMapping("/seating/{empId}")
-    public EmployeeSeatingDto getEmployeeSeating(@PathVariable Long empId) {
+    public EmployeeSeatingDto getEmployeeSeating(@PathVariable String empId) {
         return employeeService.getEmployeeSeating(empId);
     }
 }

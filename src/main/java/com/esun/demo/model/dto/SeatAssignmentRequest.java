@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SeatAssignmentRequest {
 
-    private Long empId;
+    private String empId;
     private String floorNo;
     private String seatNo;
 }

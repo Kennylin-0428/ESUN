@@ -11,7 +11,7 @@ public interface EmployeeService {
 
     void addEmployee(Employee employee);
 
-    void deleteEmployee(Long empId);
+    void deleteEmployee(String empId);
 
-    EmployeeSeatingDto getEmployeeSeating(Long empId);
+    EmployeeSeatingDto getEmployeeSeating(String empId);
 }

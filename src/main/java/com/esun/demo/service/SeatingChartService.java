@@ -14,7 +14,7 @@ public interface SeatingChartService {
 
     SeatingChartDto getSeatingChartStatus(String floorNo, String seatNo);
 
-    void updateSeatingAssignment(SeatAssignmentRequest request);
+    String updateSeatingAssignment(SeatAssignmentRequest request);
 
     void clearSeatingAssignment(SeatClearRequest request);
 

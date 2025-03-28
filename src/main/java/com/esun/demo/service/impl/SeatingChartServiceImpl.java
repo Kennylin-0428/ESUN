@@ -49,28 +49,32 @@ public class SeatingChartServiceImpl implements SeatingChartService {
         return mapToDto(seat);
     }
 
-    @Override
-    public void updateSeatingAssignment(SeatAssignmentRequest request) {
-        // 根據座位資訊找到 SeatingChart
+    public String updateSeatingAssignment(SeatAssignmentRequest request) {
         SeatingChart seat = seatingChartRepository.findByFloorNoAndSeatNo(request.getFloorNo(), request.getSeatNo());
         if (seat == null) {
             throw new RuntimeException("Seat not found");
         }
-        // 更新 Employee 的座位外鍵 (假設 Employee 有一個 floorSeatSeq 欄位)
+
+        Optional<Employee> occupantOpt = employeeRepository.findByFloorSeatSeq(seat.getFloorSeatSeq());
+        if (occupantOpt.isPresent() && !occupantOpt.get().getEmpId().equals(request.getEmpId())) {
+            throw new RuntimeException("Seat is occupied");
+        }
+
         Employee emp = employeeRepository.findByEmpId(request.getEmpId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
+
         emp.setFloorSeatSeq(seat.getFloorSeatSeq());
         employeeRepository.save(emp);
+
+        return "Seat assignment updated successfully for Employee ID: " + emp.getEmpId();
     }
 
     @Override
     public void clearSeatingAssignment(SeatClearRequest request) {
-        // 根據座位資訊找到 SeatingChart
         SeatingChart seat = seatingChartRepository.findByFloorNoAndSeatNo(request.getFloorNo(), request.getSeatNo());
         if (seat == null) {
             throw new RuntimeException("Seat not found");
         }
-        // 找到使用該座位的員工，並清除其座位資訊
         Optional<Employee> employeeOpt = employeeRepository.findByFloorSeatSeq(seat.getFloorSeatSeq());
         if (employeeOpt.isPresent()) {
             Employee emp = employeeOpt.get();
@@ -82,7 +86,6 @@ public class SeatingChartServiceImpl implements SeatingChartService {
     @Override
     @Transactional
     public void batchUpdateSeating(List<SeatAssignmentRequest> requests) {
-        // 逐筆處理，並確保在 transaction 中
         for (SeatAssignmentRequest req : requests) {
             updateSeatingAssignment(req);
         }
@@ -94,22 +97,13 @@ public class SeatingChartServiceImpl implements SeatingChartService {
         return seats.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
-    // 輔助方法：將 SeatingChart 實體轉為 DTO
     private SeatingChartDto mapToDto(SeatingChart seat) {
-        // 根據 seating chart 的 floorSeatSeq 查詢單筆 Employee
         Optional<Employee> employeeOpt = employeeRepository.findByFloorSeatSeq(seat.getFloorSeatSeq());
 
-        // 若有查到資料，代表該座位外鍵已被佔用
         boolean occupied = employeeOpt.isPresent();
         Integer empId = occupied ? employeeOpt.get().getEmpId() : null;
 
-        // 回傳 DTO，occupied 根據 Employee 外鍵是否存在來決定
-        return new SeatingChartDto(
-                seat.getFloorSeatSeq(),
-                seat.getFloorNo(),
-                seat.getSeatNo(),
-                occupied,
-                empId);
+        return new SeatingChartDto(seat.getFloorSeatSeq(), seat.getFloorNo(), seat.getSeatNo(), occupied, empId);
     }
 
 }

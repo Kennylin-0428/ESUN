@@ -16,8 +16,7 @@ public interface SeatingChartRepo extends JpaRepository<SeatingChart, Integer> {
 
     Optional<SeatingChart> findByFloorSeatSeq(Long floorSeatSeq);
 
-    // 自定義查詢取得空位：假設空位定義為沒有對應的員工使用該座位
-    @Query("SELECT s FROM SeatingChart s WHERE s.floorSeatSeq NOT IN (SELECT e.floorSeatSeq FROM Employee e WHERE e.floorSeatSeq IS NOT NULL)")
+    @Query("SELECT s FROM SeatingChart s LEFT JOIN Employee e ON s.floorSeatSeq = e.floorSeatSeq WHERE e.floorSeatSeq IS NULL ORDER BY s.floorNo")
     List<SeatingChart> findAvailableSeats();
 
 }

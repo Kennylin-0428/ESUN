@@ -30,10 +30,6 @@ GET http://localhost:8080/api/seatingchart/status?floorNo=3F&seatNo=0301
 Accept: application/json
 
 
-### Delete a seatingchart
-DELETE http://localhost:8080/api/seatingchart/1
-
-
 ### Assign employee to seat 
 POST http://localhost:8080/api/seatingchart/assign
 Content-Type: application/json
@@ -44,19 +40,14 @@ Content-Type: application/json
   "seatNo": "0301"
 }
 
-### Find seat assignment by employee ID
-GET http://localhost:8080/api/seatassignment/1
-Accept: application/json
-
-### Update seat assignment
-PUT http://localhost:8080/api/seatassignment
+### Remove employee from seat 
+PUT http://localhost:8080/api/seatingchart/clear
 Content-Type: application/json
 
 {
-  "empId": 1,
-  "floorNo": "5F",
-  "seatNo": "0501"
+  "floorNo": "3F",
+  "seatNo": "0301"
 }
 
-### Delete seat assignment by employee ID
-DELETE http://localhost:8080/api/seatassignment/1
+### Get available seat
+GET  http://localhost:8080/api/seatingchart/available

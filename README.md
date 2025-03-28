@@ -45,7 +45,9 @@ java -jar demo-0.0.1-SNAPSHOT.jar
 ### 4. 啟動前端
 ```bash
 cd frontend/vue
+
 npm install
+
 npm run dev
 
 

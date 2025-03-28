@@ -1,18 +1,50 @@
 <template>
   <div class="seating">
+    <!-- 座位區域 -->
     <div v-for="(row, rowIndex) in seatingLayout" :key="rowIndex" class="row">
       <div
         v-for="(seat, seatIndex) in row"
         :key="seatIndex"
-        :class="{
-          'seat': true,
-          'occupied': seat.status === 'occupied',
-          'available': seat.status === 'available',
-          'selected': seat.status === 'selected',
-        }"
-        @click="selectSeat(rowIndex, seatIndex)"
+        class="seat-container"
       >
-        {{ seat.label }}
+        <div
+          :class="{
+            seat: true,
+            occupied: seat.status === 'occupied',
+            available: seat.status === 'available',
+            selected: seat.status === 'selected',
+          }"
+          @click="selectSeat(rowIndex, seatIndex)"
+        >
+    
+          <template v-if="seat.status === 'occupied'">
+            {{ seat.label }}
+          </template>
+
+          <template v-else>
+            {{ seat.label }}
+          </template>
+        </div>
+
+        <div
+          v-if="
+            selectedSeat &&
+            selectedSeat.rowIndex === rowIndex &&
+            selectedSeat.seatIndex === seatIndex
+          "
+          class="dropdown-container"
+        >
+          <select v-model="selectedEmployeeId" class="employee-dropdown">
+            <option disabled value="">選擇員工</option>
+            <option
+              v-for="employee in employees"
+              :key="employee.empId"
+              :value="employee.empId"
+            >
+              {{ employee.empName }} ({{ employee.empId }})
+            </option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="status-container">
@@ -26,61 +58,118 @@
       </div>
       <div class="status">
         <div class="status-box selected"></div>
-        <div class="status-text">請選擇</div>
+        <div class="status-text">已選擇</div>
       </div>
-      <button class="submit-btn">送出</button>
+      <button
+        class="submit-btn"
+        @click="submitSeat"
+        :disabled="!selectedSeat || !selectedEmployeeId"
+      >
+        送出
+      </button>
     </div>
   </div>
 </template>
 
+---
+
 <script>
+import { getAllSeatingChart, assignSeatToEmployee } from "../api/seatingChartApi";
+import { getAllEmployee } from "../api/employeeApi"; 
+
 export default {
   data() {
     return {
-      seatingLayout: [
-        [
-          { label: '1樓：座位1', status: 'occupied' },
-          { label: '1樓：座位2', status: 'occupied' },
-          { label: '1樓：座位3', status: 'occupied' },
-          { label: '1樓：座位4', status: 'occupied' },
-        ],
-        [
-          { label: '2樓：座位1', status: 'available' },
-          { label: '2樓：座位2', status: 'available' },
-          { label: '2樓：座位3', status: 'available' },
-          { label: '2樓：座位4', status: 'available' },
-        ],
-        [
-          { label: '3樓：座位1', status: 'occupied' },
-          { label: '3樓：座位2', status: 'occupied' },
-          { label: '3樓：座位3', status: 'occupied' },
-          { label: '3樓：座位4', status: 'occupied' },
-        ],
-        [
-          { label: '4樓：座位1', status: 'available' },
-          { label: '4樓：座位2', status: 'available' },
-          { label: '4樓：座位3', status: 'available' },
-          { label: '4樓：座位4', status: 'available' },
-        ],
-      ],
-      selectedSeat: null, // Store the index of the selected seat
+      seatingLayout: [],
+      selectedSeat: null, 
+      employees: [], 
+      selectedEmployeeId: "", 
     };
   },
+  mounted() {
+    this.loadSeatingChart();
+    this.loadEmployees(); 
+  },
   methods: {
+    async loadSeatingChart() {
+      try {
+        const response = await getAllSeatingChart();
+        this.seatingLayout = this.formatSeatingData(response.data);
+      } catch (error) {
+        console.error(error.message);
+      }
+    },
+    async loadEmployees() {
+      try {
+        const response = await getAllEmployee();
+        this.employees = response.data; // 假設回傳 { empId, empName }
+      } catch (error) {
+        console.error(error.message);
+      }
+    },
+
+    formatSeatingData(data) {
+      const floors = {};
+      data.forEach((seat) => {
+        const floor = seat.floorNo;
+        if (!floors[floor]) {
+          floors[floor] = [];
+        }
+        const seatLabel = seat.occupied
+          ? `${floor}：座位 ${seat.seatNo} [員編:${seat.empId}]`
+          : `${floor}：座位 ${seat.seatNo}`;
+
+        floors[floor].push({
+          label: seatLabel,
+          status: seat.occupied ? "occupied" : "available",
+          seatNo: seat.seatNo,
+          floorNo: seat.floorNo,
+          floorSeatSeq: seat.floorSeatSeq,
+          empId: seat.empId,
+        });
+      });
+
+      return Object.values(floors).map((seats) => seats);
+    },
+
     selectSeat(rowIndex, seatIndex) {
       const selectedSeat = this.seatingLayout[rowIndex][seatIndex];
-      
-      // If the seat is available, change its status to selected
-      if (selectedSeat.status === 'available') {
-        // If a seat was already selected, reset it to available
+
+      if (selectedSeat.status === "available") {
         if (this.selectedSeat !== null) {
-          const prevSelectedSeat = this.selectedSeat;
-          this.seatingLayout[prevSelectedSeat.rowIndex][prevSelectedSeat.seatIndex].status = 'available';
+          const prevSeat = this.seatingLayout[this.selectedSeat.rowIndex][
+            this.selectedSeat.seatIndex
+          ];
+          prevSeat.status = "available";
         }
-        
-        // Mark the new seat as selected
-        selectedSeat.status = 'selected';
-        this.selectedSeat = { rowIndex, seatIndex };
+        selectedSeat.status = "selected";
+        this.selectedSeat = { rowIndex, seatIndex, seatData: selectedSeat };
+        this.selectedEmployeeId = "";
+      }
+    },
+
+    async submitSeat() {
+      if (!this.selectedSeat || !this.selectedEmployeeId) {
+        alert("請選擇座位並分配員工！");
+        return;
+      }
+
+      const { floorNo, seatNo } = this.selectedSeat.seatData;
+      const payload = {
+        empId: this.selectedEmployeeId,
+        floorNo,
+        seatNo,
+      };
+
+      try {
+        const response = await assignSeatToEmployee(payload);
+        alert("座位分配成功：" + response.data);
+        this.loadSeatingChart();
+        this.selectedSeat = null;
+        this.selectedEmployeeId = "";
+      } catch (error) {
+        console.error(error.message);
+        alert("座位分配失敗：" + error.message);
       }
     },
   },
@@ -100,6 +189,13 @@ export default {
   justify-content: space-between;
 }
 
+.seat-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .seat {
   width: 200px;
   height: 40px;
@@ -108,13 +204,15 @@ export default {
   align-items: center;
   cursor: pointer;
   border: 1px solid #ccc;
-  background-color: #d3d3d3; /* Default gray background */
+  background-color: #d3d3d3;
   border-radius: 6px;
+  text-align: center;
 }
 
 .occupied {
   background-color: red;
   color: white;
+  cursor: not-allowed;
 }
 
 .available {
@@ -123,6 +221,23 @@ export default {
 
 .selected {
   background-color: lightgreen;
+}
+
+.dropdown-container {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+  z-index: 10;
+}
+
+.employee-dropdown {
+  width: 180px;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 .status-container {
@@ -162,5 +277,10 @@ export default {
 
 .submit-btn:hover {
   background-color: darkblue;
+}
+
+.submit-btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
 </style>

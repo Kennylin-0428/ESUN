@@ -1,3 +1,7 @@
+### Get all employee 
+GET http://localhost:8080/api/employee/all
+Accept: application/json
+
 ### Get employee by ID
 GET http://localhost:8080/api/employee/seating/1
 Accept: application/json

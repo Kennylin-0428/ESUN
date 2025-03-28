@@ -8,6 +8,9 @@ import com.esun.demo.repo.SeatingChartRepo;
 import com.esun.demo.service.EmployeeService;
 
 import jakarta.transaction.Transactional;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +24,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     private SeatingChartRepo seatingChartRepository;
 
     @Override
+    public List<Employee> getAllEmployee() {
+        List<Employee> employees = employeeRepository.findAll();
+        return employees;
+    }
+
+    @Override
     public void addEmployee(Employee employee) {
-        // 檢查必填欄位，並保存
         if (employee.getName() == null || employee.getName().isEmpty()) {
             throw new RuntimeException("Employee name is required");
         }
@@ -32,7 +40,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public void deleteEmployee(Long empId) {
-        // 取得員工，並清除其座位關聯
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         employee.setFloorSeatSeq(null);

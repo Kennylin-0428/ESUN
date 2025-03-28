@@ -13,6 +13,7 @@ import com.esun.demo.service.SeatingChartService;
 
 @RestController
 @RequestMapping("/api/seatingchart")
+@CrossOrigin(origins = "http://localhost:5173")
 public class SeatingChartController {
 
     @Autowired

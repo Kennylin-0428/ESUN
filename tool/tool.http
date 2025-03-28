@@ -1,0 +1,58 @@
+### Get all employee 
+GET http://localhost:8080/api/employee/all
+Accept: application/json
+
+### Get employee by ID
+GET http://localhost:8080/api/employee/seating/1
+Accept: application/json
+
+### Create a new employee
+POST http://localhost:8080/api/employee/add
+Content-Type: application/json
+
+{
+  "empId": "0004",
+  "name": "cindy",
+  "email": "cindy@example.com",
+  "floorSeatSeq": 1
+}
+
+
+### Delete an employee
+DELETE http://localhost:8080/api/employee/delete/2
+
+
+### Get all seatingchart
+GET http://localhost:8080/api/seatingchart/all
+Accept: application/json
+
+### Get seatingchart by ID
+GET http://localhost:8080/api/seatingchart/floor/1F
+Accept: application/json
+
+### Get seatingchart status
+GET http://localhost:8080/api/seatingchart/status?floorNo=3F&seatNo=0301
+Accept: application/json
+
+
+### Assign employee to seat 
+POST http://localhost:8080/api/seatingchart/assign
+Content-Type: application/json
+
+{
+  "empId": 4,
+  "floorNo": "3F",
+  "seatNo": "0301"
+}
+
+### Remove employee from seat 
+PUT http://localhost:8080/api/seatingchart/clear
+Content-Type: application/json
+
+{
+  "floorNo": "3F",
+  "seatNo": "0301"
+}
+
+### Get available seat
+GET  http://localhost:8080/api/seatingchart/available

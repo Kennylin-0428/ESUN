@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', 
-  timeout: 5000, 
+  baseURL: '/api', // ★ 改成同源路徑，交給 Nginx 代理到 backend
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

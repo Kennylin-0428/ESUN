@@ -1,9 +1,6 @@
 # 使用 OpenJDK 17 作為基礎映像檔
 FROM openjdk:17-jdk-slim
 
-# 設定維護者資訊 (可選)
-LABEL maintainer="Your Name <your.email@example.com>"
-
 # 設定工作目錄
 WORKDIR /app
 

@@ -1,32 +1,24 @@
-# 階段一：使用 Node.js 映像檔來建置應用程式
-FROM node:16 as builder
-
-# 設定工作目錄
+# ========== Build Stage ==========
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# 複製 package.json 和 package-lock.json
+# 先安裝依賴（利用快取）
 COPY package*.json ./
+RUN npm ci
 
-# 安裝所有依賴
-RUN npm install
-
-# 複製專案原始碼
+# 複製原始碼並建置
 COPY . .
+ENV NODE_ENV=production
+RUN npm run build  # 產物在 /app/dist
 
-# 執行 npm run build 來建置生產環境的靜態檔案
-RUN npm run build
+# ========== Runtime (Nginx) ==========
+FROM nginx:1.27-alpine
 
-# 階段二：使用 Nginx 映像檔來提供靜態檔案服務
-FROM nginx:alpine
+# 放入我們的站台設定（含 /api 反向代理與 SPA fallback）
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 複製 Nginx 預設設定檔
+# 複製前端靜態檔
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 複製自定義的 Nginx 設定檔 (可選)
-# COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-# 暴露 Nginx 預設埠
 EXPOSE 80
-
-# 啟動 Nginx 服務
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,10 @@
+FROM mysql:8.0
+
+# 複製 SQL 檔案到初始化目錄
+# MySQL 會按照檔案名稱的字母順序執行這些檔案
+# 注意：這些檔案只在資料庫首次初始化時執行（當 /var/lib/mysql 為空時）
+COPY DB/init-seatingchart-ddl.sql /docker-entrypoint-initdb.d/01-seatingchart-ddl.sql
+COPY DB/init-employee-ddl.sql /docker-entrypoint-initdb.d/02-employee-ddl.sql
+COPY DB/init-seatingchart-dml.sql /docker-entrypoint-initdb.d/03-seatingchart-dml.sql
+COPY DB/init-employee-dml.sql /docker-entrypoint-initdb.d/04-employee-dml.sql
+COPY DB/init-procedure.sql /docker-entrypoint-initdb.d/05-procedure.sql

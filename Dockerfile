@@ -1,15 +1,21 @@
-# 使用 OpenJDK 17 作為基礎映像檔
-FROM openjdk:17-jdk-slim
-
-# 設定工作目錄
+# ---- build stage ----
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# 將 Maven 專案的 JAR 檔複製到容器中
-# 這裡假設 mvn clean package 已經執行過，且 JAR 檔在 target/ 目錄下
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+# 先拷貝 pom.xml 以利快取相依
+COPY pom.xml ./
+RUN mvn -q -DskipTests dependency:go-offline
 
-# 暴露應用程式使用的埠
+# 再拷貝原始碼後建置
+COPY src ./src
+RUN mvn -DskipTests clean package
+
+# ---- runtime stage ----
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+
+# 不用猜 jar 名稱
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
-
-# 啟動應用程式
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
